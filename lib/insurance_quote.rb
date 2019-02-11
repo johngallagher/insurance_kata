@@ -1,3 +1,37 @@
+class Insurer
+  TWO_MATCH_RATE = 0.1
+  ONE_MATCH_RATES = {
+    0 => 0.2,
+    1 => 0.25,
+    2 => 0.3
+  }
+
+  def initialize name, rates:
+    @name = name
+    @rates = rates.split("+").map(&:to_sym)
+  end
+  
+  def quote(top_three)
+    top_three.values_at(*@rates).compact.inject(&:+)
+  end
+
+  def match_rate_for top_three
+    matching_covers_for(top_three).one? ? one_match_rate_for(top_three) : TWO_MATCH_RATE
+  end
+
+  def one_match_rate_for top_three
+    ONE_MATCH_RATES.fetch(index_of_first_match_for(top_three))
+  end
+
+  def index_of_first_match_for top_three
+    top_three.keys.index(matching_covers_for(top_three).first)
+  end
+
+  def matching_covers_for top_three
+    @rates & top_three.keys 
+  end
+end
+
 class InsuranceQuote
   TWO_MATCH_RATE = 0.1
   ONE_MATCH_RATES = {
@@ -10,9 +44,14 @@ class InsuranceQuote
     @request = request
   end
 
+  def self.create request
+    new(request).create
+  end
+
   def create
+    insurer_a = Insurer.new(:insurer_a, rates: "windows+contents")
     { 
-      insurer_a: quote_for(:insurer_a) * (match_rate_for :insurer_a),
+      insurer_a: insurer_a.quote(top_three) * insurer_a.match_rate_for(top_three),
       insurer_b: quote_for(:insurer_b) * (match_rate_for :insurer_b),
       insurer_c: quote_for(:insurer_c) * (match_rate_for :insurer_c)
     }
@@ -20,10 +59,6 @@ class InsuranceQuote
 
   def match_rate_for insurer
     matching_covers_for(insurer).one? ? one_match_rate_for(insurer) : TWO_MATCH_RATE
-  end
-
-  def self.create request
-    new(request).create
   end
 
   def one_match_rate_for insurer
