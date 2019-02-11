@@ -1,7 +1,7 @@
 
 class Contents
   def self.calculate request
-    request.fetch(:covers).sort_by { |key, value| value }.reverse[0..2].map(&:first)
+    Hash[request.fetch(:covers).sort_by { |key, value| value }.reverse[0..2]]
   end
 end
 
@@ -17,9 +17,10 @@ RSpec.describe Contents do
         }
       }
     end
+
     it 'selects the three biggest covers' do
       result = Contents.calculate(request)
-      expect(result).to eq([:windows, :contents, :engine])
+      expect(result).to eq(windows: 50, contents: 30, engine: 20)
     end
   end
 end
