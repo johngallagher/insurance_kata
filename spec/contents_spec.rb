@@ -3,7 +3,8 @@ class Contents
   def self.calculate request
     { 
       insurer_a: quote_for_insurer_a(request) * 0.1,
-      insurer_b: quote_for_insurer_b(request) * 0.25
+      insurer_b: quote_for_insurer_b(request) * 0.25,
+      insurer_c: quote_for_insurer_c(request) * 0.30
     }
   end
 
@@ -15,12 +16,20 @@ class Contents
     top_three(request).values_at(*insurer_b_rates.split("+").map(&:to_sym)).compact.inject(&:+)
   end
 
+  def self.quote_for_insurer_c(request)
+    top_three(request).values_at(*insurer_c_rates.split("+").map(&:to_sym)).compact.inject(&:+)
+  end
+
   def self.insurer_a_rates
     configuration[:insurer_rates][:insurer_a]
   end
 
   def self.insurer_b_rates
     configuration[:insurer_rates][:insurer_b]
+  end
+
+  def self.insurer_c_rates
+    configuration[:insurer_rates][:insurer_c]
   end
 
   def self.top_three(request)
@@ -59,6 +68,11 @@ RSpec.describe Contents do
     it 'calculates a quote for insurer b' do
       result = Contents.calculate(request)
       expect(result[:insurer_b]).to eq(7.5)
+    end
+    
+    it 'calculates a quote for insurer c' do
+      result = Contents.calculate(request)
+      expect(result[:insurer_c]).to eq(6)
     end
   end
 end
