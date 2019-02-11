@@ -1,57 +1,53 @@
 
 class Contents
-  def self.calculate request
+  TWO_MATCH_RATE = 0.1
+  ONE_MATCH_RATES = {
+    0 => 0.2,
+    1 => 0.25,
+    2 => 0.3
+  }
+
+  def initialize request
+    @request = request
+  end
+
+  def calculate
     { 
-      insurer_a: quote_for_insurer_a(request) * 0.1,
-      insurer_b: quote_for_insurer_b(request) * one_match_rate(request)
+      insurer_a: quote_for(:insurer_a) * TWO_MATCH_RATE,
+      insurer_b: quote_for(:insurer_b) * (one_match_rate_for :insurer_b),
+      insurer_c: quote_for(:insurer_c) * (one_match_rate_for :insurer_c)
     }
   end
 
-  def self.one_match_rate(request)
-    {
-      0 => 0.2,
-      1 => 0.25,
-      2 => 0.3
-    }.fetch(index_of_first_match(request))
+  def self.calculate request
+    new(request).calculate
   end
 
-  def self.index_of_first_match(request)
-    top_three(request).keys.index(matching_covers_for_b(request).first)
+  def one_match_rate_for insurer
+    ONE_MATCH_RATES.fetch(index_of_first_match_for(insurer))
   end
 
-  def self.matching_covers_for_b(request)
-    insurer_b_rates.split("+").map(&:to_sym) & top_three(request).keys 
+  def index_of_first_match_for insurer
+    top_three.keys.index(matching_covers_for(insurer).first)
   end
 
-  def self.quote_for_insurer_a(request)
-    top_three(request).values_at(*insurer_a_rates.split("+").map(&:to_sym)).compact.inject(&:+)
+  def matching_covers_for insurer
+    rates_for(insurer).split("+").map(&:to_sym) & top_three.keys 
   end
 
-  def self.quote_for_insurer_b(request)
-    top_three(request).values_at(*insurer_b_rates.split("+").map(&:to_sym)).compact.inject(&:+)
+  def quote_for insurer
+    top_three.values_at(*rates_for(insurer).split("+").map(&:to_sym)).compact.inject(&:+)
   end
 
-  def self.quote_for_insurer_c(request)
-    top_three(request).values_at(*insurer_c_rates.split("+").map(&:to_sym)).compact.inject(&:+)
+  def rates_for insurer
+    configuration[:insurer_rates][insurer]
   end
 
-  def self.insurer_a_rates
-    configuration[:insurer_rates][:insurer_a]
+  def top_three
+    @request.fetch(:covers).sort_by { |_, value| value }.reverse[0..2].yield_self { |items| Hash[items] }
   end
 
-  def self.insurer_b_rates
-    configuration[:insurer_rates][:insurer_b]
-  end
-
-  def self.insurer_c_rates
-    configuration[:insurer_rates][:insurer_c]
-  end
-
-  def self.top_three(request)
-    request.fetch(:covers).sort_by { |_, value| value }.reverse[0..2].yield_self { |items| Hash[items] }
-  end
-
-  def self.configuration
+  def configuration
     {
       "insurer_rates": {
         "insurer_a": "windows+contents",
@@ -85,7 +81,7 @@ RSpec.describe Contents do
       expect(result[:insurer_b]).to eq(7.5)
     end
     
-    xit 'calculates a quote for insurer c' do
+    it 'calculates a quote for insurer c' do
       result = Contents.calculate(request)
       expect(result[:insurer_c]).to eq(6)
     end
