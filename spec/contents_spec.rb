@@ -13,10 +13,14 @@ class Contents
 
   def calculate
     { 
-      insurer_a: quote_for(:insurer_a) * TWO_MATCH_RATE,
-      insurer_b: quote_for(:insurer_b) * (one_match_rate_for :insurer_b),
-      insurer_c: quote_for(:insurer_c) * (one_match_rate_for :insurer_c)
+      insurer_a: quote_for(:insurer_a) * (match_rate_for :insurer_a),
+      insurer_b: quote_for(:insurer_b) * (match_rate_for :insurer_b),
+      insurer_c: quote_for(:insurer_c) * (match_rate_for :insurer_c)
     }
+  end
+
+  def match_rate_for insurer
+    matching_covers_for(insurer).one? ? one_match_rate_for(insurer) : TWO_MATCH_RATE
   end
 
   def self.calculate request
@@ -59,7 +63,7 @@ class Contents
 end
 
 RSpec.describe Contents do
-  context 'with four covers and one insurer' do
+  context 'with four covers' do
     let(:request) do
       {
         "covers": {
@@ -84,6 +88,24 @@ RSpec.describe Contents do
     it 'calculates a quote for insurer c' do
       result = Contents.calculate(request)
       expect(result[:insurer_c]).to eq(6)
+    end
+  end
+
+  context 'with only one matching cover for insurer a' do
+    let(:request) do
+      {
+        "covers": {
+          "tires": 10,
+          "windows": 5,
+          "engine": 20,
+          "contents": 30
+        }
+      }
+    end
+
+    it 'calculates a quote for insurer a' do
+      result = Contents.calculate(request)
+      expect(result[:insurer_a]).to eq(0.2 * 30)
     end
   end
 end
