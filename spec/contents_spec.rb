@@ -4,11 +4,11 @@ RSpec.describe InsuranceQuote do
   context 'with four covers' do
     let(:request) do
       {
-        "covers": {
-          "tires": 10,
-          "windows": 50,
-          "engine": 20,
-          "contents": 30
+        covers: {
+          tires: 10,
+          windows: 50,
+          engine: 20,
+          contents: 30
         }
       }
     end
@@ -32,11 +32,11 @@ RSpec.describe InsuranceQuote do
   context 'with only one matching cover for insurer a' do
     let(:request) do
       {
-        "covers": {
-          "tires": 10,
-          "windows": 5,
-          "engine": 20,
-          "contents": 30
+        covers: {
+          tires: 10,
+          windows: 5,
+          engine: 20,
+          contents: 30
         }
       }
     end

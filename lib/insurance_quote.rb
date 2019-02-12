@@ -25,10 +25,10 @@ class InsuranceQuote
 
   def configuration
     {
-      "insurer_rates": {
-        "insurer_a": "windows+contents",
-        "insurer_b": "tires+contents",
-        "insurer_c": "doors+engine"
+      insurer_rates: {
+        insurer_a: "windows+contents",
+        insurer_b: "tires+contents",
+        insurer_c: "doors+engine"
       }
     }
   end
