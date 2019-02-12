@@ -1,13 +1,6 @@
 require 'insurer'
 
 class InsuranceQuote
-  TWO_MATCH_RATE = 0.1
-  ONE_MATCH_RATES = {
-    0 => 0.2,
-    1 => 0.25,
-    2 => 0.3
-  }
-
   def initialize request
     @request = request
   end

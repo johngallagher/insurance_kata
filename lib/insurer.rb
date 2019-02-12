@@ -1,10 +1,6 @@
 class Insurer
   TWO_MATCH_RATE = 0.1
-  ONE_MATCH_RATES = {
-    0 => 0.2,
-    1 => 0.25,
-    2 => 0.3
-  }
+  ONE_MATCH_RATES = [0.2, 0.25, 0.3]
   attr_reader :name
 
   def initialize name, rates:
@@ -33,7 +29,7 @@ class Insurer
   end
 
   def one_match_rate_for top_three
-    ONE_MATCH_RATES.fetch(index_of_first_match_for(top_three))
+    ONE_MATCH_RATES[index_of_first_match_for(top_three)]
   end
 
   def index_of_first_match_for top_three
