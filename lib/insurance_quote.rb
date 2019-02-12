@@ -11,7 +11,7 @@ class InsuranceQuote
 
   def create
     insurers.inject({}) do |quotes, insurer|
-      quotes.merge(insurer.final_quote(top_three))
+      quotes.merge(insurer.to_quote(top_three))
     end
   end
 

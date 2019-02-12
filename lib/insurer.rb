@@ -3,25 +3,29 @@ class Insurer
   ONE_MATCH_RATES = [0.2, 0.25, 0.3]
   attr_reader :name
 
-  def initialize name, rates:
+  def initialize name, covers:
     @name = name
-    @rates = rates
+    @covers = covers
   end
 
   def self.from_configuration configuration
-    configuration[:insurer_rates].map do |name, rates|
-      Insurer.new name, rates: rates.split("+").map(&:to_sym)
+    configuration[:insurer_rates].map do |name, covers|
+      Insurer.new name, covers: covers.split("+").map(&:to_sym)
     end
   end
 
-  def final_quote(top_three)
+  def to_quote(top_three)
     {
-      name => quote(top_three) * match_rate_for(top_three)
+      name => total_cover(top_three) * match_rate_for(top_three)
     }
   end
 
-  def quote(top_three)
-    top_three.values_at(*@rates).compact.inject(&:+)
+  def total_cover(top_three)
+    top_three.yield_self(&cover_amounts).compact.inject(&:+)
+  end
+
+  def cover_amounts
+    ->(cover_with_amounts) { cover_with_amounts.values_at(*@covers) }
   end
 
   def match_rate_for top_three
@@ -37,7 +41,6 @@ class Insurer
   end
 
   def matching_covers_for top_three
-    @rates & top_three.keys 
+    @covers & top_three.keys
   end
 end
-
