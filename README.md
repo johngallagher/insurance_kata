@@ -2,12 +2,12 @@
 
 ## Install
 
-```ruby
+```bash
 bundle install
 ```
 
 ## Test
 
-```ruby
+```bash
 bundle exec rspec
 ```
