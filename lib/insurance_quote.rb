@@ -5,12 +5,19 @@ class Insurer
     1 => 0.25,
     2 => 0.3
   }
+  attr_reader :name
 
   def initialize name, rates:
     @name = name
     @rates = rates.split("+").map(&:to_sym)
   end
-  
+
+  def final_quote(top_three)
+    {
+      name => quote(top_three) * match_rate_for(top_three)
+    }
+  end
+
   def quote(top_three)
     top_three.values_at(*@rates).compact.inject(&:+)
   end
@@ -49,36 +56,17 @@ class InsuranceQuote
   end
 
   def create
-    insurer_a = Insurer.new(:insurer_a, rates: "windows+contents")
-    { 
-      insurer_a: insurer_a.quote(top_three) * insurer_a.match_rate_for(top_three),
-      insurer_b: quote_for(:insurer_b) * (match_rate_for :insurer_b),
-      insurer_c: quote_for(:insurer_c) * (match_rate_for :insurer_c)
-    }
+    insurers.inject({}) do |quotes, insurer|
+      quotes.merge(insurer.final_quote(top_three))
+    end
   end
 
-  def match_rate_for insurer
-    matching_covers_for(insurer).one? ? one_match_rate_for(insurer) : TWO_MATCH_RATE
-  end
-
-  def one_match_rate_for insurer
-    ONE_MATCH_RATES.fetch(index_of_first_match_for(insurer))
-  end
-
-  def index_of_first_match_for insurer
-    top_three.keys.index(matching_covers_for(insurer).first)
-  end
-
-  def matching_covers_for insurer
-    rates_for(insurer).split("+").map(&:to_sym) & top_three.keys 
-  end
-
-  def quote_for insurer
-    top_three.values_at(*rates_for(insurer).split("+").map(&:to_sym)).compact.inject(&:+)
-  end
-
-  def rates_for insurer
-    configuration[:insurer_rates][insurer]
+  def insurers
+    [
+      Insurer.new(:insurer_a, rates: "windows+contents"),
+      Insurer.new(:insurer_b, rates: "tires+contents"),
+      Insurer.new(:insurer_c, rates: "doors+engine")
+    ]
   end
 
   def top_three
